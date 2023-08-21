@@ -2,21 +2,38 @@ import { useState } from "react";
 
 const AuthForm = ({ setToken }) => {
   const [alert, setAlert] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isSignIn, setIsSignIn] = useState(true);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const result = await fetch("/auth/signIn", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    let data;
 
-    const data = await result.json();
+    if (isSignIn) {
+      const result = await fetch("/auth/signIn", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      data = await result.json();
+    } else {
+      const result = await fetch("/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ firstName, lastName, username, password }),
+      });
+
+      data = await result.json();
+    }
 
     if (data.token) {
       setAlert("");
@@ -28,9 +45,30 @@ const AuthForm = ({ setToken }) => {
 
   return (
     <>
-      <p>Sign in to see trains</p>
+      <p>
+        {isSignIn ? "Sign in" : "Register"} to see trains or{" "}
+        <a href="#" onClick={() => setIsSignIn(!isSignIn)}>
+          {isSignIn ? "register as a new user" : "sign in"}
+        </a>
+      </p>
       {alert}
       <form onSubmit={handleSubmit}>
+        <label hidden={isSignIn}>
+          First Name:
+          <input
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+        </label>
+        <label hidden={isSignIn}>
+          Last Name:
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </label>
         <label>
           Username:
           <input
